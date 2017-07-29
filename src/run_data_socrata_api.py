@@ -6,7 +6,8 @@ Created on Sat Jul 29 14:34:41 2017
 """
 
 from sodapy import Socrata
-from socrata_311 import settings
+from socrata_311 import settings, etl
+
 
 #Setting up the initial connector
 client = Socrata(settings.APP_NYC_API_DOMAIN ,settings.APP_TOKEN_311,timeout=90)
@@ -21,3 +22,5 @@ dataDate = client.get(settings.APP_NYC_DATASET,limit = 1000,where = "created_dat
 #some experiments about downloading data based on timestamp
 dataTimestamp = client.get(settings.APP_NYC_DATASET,limit = 10000,where = "created_date >= '2017-07-27T00:01:02.000'")
 
+#if wanted to convert to dataframe
+fr = etl.flatten_response_list(dataTimestamp,restrict_columns=True)
