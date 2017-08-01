@@ -6,7 +6,9 @@ Created on Sat Jul 29 14:34:41 2017
 """
 
 from sodapy import Socrata
-from socrata_311 import settings, etl
+from socrata_311 import settings, etl,api
+import datetime
+
 
 
 #Setting up the initial connector
@@ -24,3 +26,14 @@ dataTimestamp = client.get(settings.APP_NYC_DATASET,limit = 10000,where = "creat
 
 #if wanted to convert to dataframe
 fr = etl.flatten_response_list(dataTimestamp,restrict_columns=True)
+
+
+#experiment to get data since a given timestamp as string
+#constructing the string
+#can pass days,hours,minutes,hours,seconds
+st = datetime.datetime.now() - datetime.timedelta(days=2)
+since = st.isoformat()
+#calling the function
+#receives a date object or timestamp in isoformat
+#beware of the restrictive optional parameters
+dataSince = api.pull_data_modified_since(since)
