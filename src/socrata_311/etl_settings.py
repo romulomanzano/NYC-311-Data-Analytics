@@ -14,5 +14,6 @@ RESPONSE_COL_REQUIRED = ['unique_key',
                         'resolution_description',
                         'resolution_action_updated_date',
                         'latitude',
-                        'longitude']
+                        'longitude',
+                        'time_to_closure']
 

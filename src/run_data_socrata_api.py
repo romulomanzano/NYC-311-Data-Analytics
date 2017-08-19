@@ -37,3 +37,8 @@ since = st.isoformat()
 #receives a date object or timestamp in isoformat
 #beware of the restrictive optional parameters
 dataSince = api.pull_data_modified_since(since)
+
+
+list(map(lambda x: etl.calculate_days_to_closure_dict(x),dataSince))
+frameDelta = etl.flatten_response_list(dataSince,restrict_columns=True)
+
