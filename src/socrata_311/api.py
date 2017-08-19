@@ -5,7 +5,7 @@ Created on Mon Jul 31 21:52:56 2017
 @author: romulo
 """
 from sodapy import Socrata
-from . import settings
+from . import settings, etl
 import pandas as pd
 
 # =============================================================================
@@ -48,5 +48,50 @@ def pull_agg_closure_statistics_created_since(since,client=None,timeout = 120,gr
 
     dataFrame= pd.DataFrame.from_dict(data)
     dataFrame['perc_closed'] = (dataFrame['closed'].astype('float') / dataFrame['total'].astype('float'))
+    return dataFrame
 
+
+# =============================================================================
+#   receives a date object or timestamp in isoformat
+#   an existing connection is optional, can create a new one
+#   beware of the restrictive optional parameters (timeout, data limit)
+# =============================================================================
+def pull_raw_time_to_closure_statistics_created_since_closed_only(since,client=None,timeout = 120,group_key = ['agency'], data_limit = 1000):
+    if (client == None):
+        client = Socrata(settings.APP_NYC_API_DOMAIN ,settings.APP_TOKEN_311,timeout=timeout)
+    group_key_str = ','.join(group_key)
+
+    data = client.get(settings.APP_NYC_DATASET,limit = data_limit,where = "created_date >= '"+str(since)+"'" +
+                      " and closed_date IS NOT NULL and status = 'Closed'",
+                      select = group_key_str+",closed_date,created_date,"\
+                          "(date_extract_woy(closed_date)*7) -(7 - case(date_extract_dow(closed_date)=0,7,true,date_extract_dow(closed_date))) as closed_doy," \
+                          "(date_extract_woy(created_date)*7) - (7 - case(date_extract_dow(closed_date)=0,7,true,date_extract_dow(created_date))) as created_doy,"\
+                          "(date_extract_y(closed_date)  - date_extract_y(created_date)) * 365 as year_diff_adjustment,"\
+                          #"(date_extract_woy(closed_date)*7) as closed_woy,(date_extract_woy(created_date)*7) as created_woy")
+                          "closed_doy - created_doy + year_diff_adjustment as days_to_closure")
+    list(map(lambda x: etl.calculate_days_to_closure_dict(x), data))
+    dataFrame= pd.DataFrame.from_dict(data)
+    dataFrame['days_to_closure'] = dataFrame['days_to_closure'].astype('float')
+    return dataFrame
+
+
+# =============================================================================
+#   receives a date object or timestamp in isoformat
+#   an existing connection is optional, can create a new one
+#   beware of the restrictive optional parameters (timeout, data limit)
+# =============================================================================
+def pull_agg_time_to_closure_statistics_created_since_closed_only(since,client=None,timeout = 120,group_key = ['agency']):
+    if (client == None):
+        client = Socrata(settings.APP_NYC_API_DOMAIN ,settings.APP_TOKEN_311,timeout=timeout)
+    group_key_str = ','.join(group_key)
+
+    data = client.get(settings.APP_NYC_DATASET,query = "select "+ group_key_str+","  \
+                          "avg(((date_extract_woy(closed_date)*7) -(7 - case(date_extract_dow(closed_date)=0,7,true,date_extract_dow(closed_date)))) " \
+                          " - ((date_extract_woy(created_date)*7) - (7 - case(date_extract_dow(created_date)=0,7,true,date_extract_dow(created_date)))) "\
+                          " + ((date_extract_y(closed_date)  - date_extract_y(created_date))* 365) "\
+                          ") as days_to_closure "\
+                          "where created_date >= '" + str(since) + "' and closed_date IS NOT NULL and status = 'Closed' " \
+                          "group by "+group_key_str )
+    dataFrame= pd.DataFrame.from_dict(data)
+    dataFrame['days_to_closure'] = dataFrame['days_to_closure'].astype('float')
     return dataFrame

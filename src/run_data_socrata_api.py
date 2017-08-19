@@ -44,5 +44,7 @@ frameDelta = etl.flatten_response_list(dataSince, restrict_columns=True)
 #aggregated['perc_closed'] = (aggregated['is_closed'] / aggregated['unique_key'])
 aggCout = api.pull_agg_closure_statistics_created_since(since,group_key = ['agency','complaint_type'])
 
+
+aggTimeMetrics = api.pull_agg_time_to_closure_statistics_created_since_closed_only(since,group_key = ['agency','complaint_type'])
 print('Complete')
 # TODO need to make sure nulls are handled (sample comment)
