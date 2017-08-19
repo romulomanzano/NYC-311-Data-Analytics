@@ -40,9 +40,9 @@ etl.apply_dictionary_enrichments( dataSince )
 frameDelta = etl.flatten_response_list(dataSince, restrict_columns=True)
 #frameDelta = frameDelta.head(10)
 
-aggregated = frameDelta.groupby(['agency'],as_index=False).agg({'is_closed':'sum','unique_key':'count'})
-aggregated['perc_closed'] = (aggregated['is_closed'] / aggregated['unique_key'])
-aggCout = api.pull_agg_closure_statistics_created_since(since)
+#aggregated = frameDelta.groupby(['agency'],as_index=False).agg({'is_closed':'sum','unique_key':'count'})
+#aggregated['perc_closed'] = (aggregated['is_closed'] / aggregated['unique_key'])
+aggCout = api.pull_agg_closure_statistics_created_since(since,group_key = ['agency','complaint_type'])
 
-db = 'ok'
+print('Complete')
 # TODO need to make sure nulls are handled (sample comment)

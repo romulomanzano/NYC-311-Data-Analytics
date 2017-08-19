@@ -36,14 +36,15 @@ def pull_data_created_since(since,client=None,timeout = 120,data_limit = 10000):
 #   an existing connection is optional, can create a new one
 #   beware of the restrictive optional parameters (timeout, data limit)
 # =============================================================================
-def pull_agg_closure_statistics_created_since(since,client=None,timeout = 120):
+def pull_agg_closure_statistics_created_since(since,client=None,timeout = 120,group_key = ['agency']):
     if (client == None):
         client = Socrata(settings.APP_NYC_API_DOMAIN ,settings.APP_TOKEN_311,timeout=timeout)
-    data = client.get(settings.APP_NYC_DATASET,query = "select agency, " \
+    group_key_str = ','.join(group_key)
+    data = client.get(settings.APP_NYC_DATASET,query = "select "+group_key_str +", " \
                                                        "count(*) as total, " \
                                                        "sum(case(status='Closed',1,true,0)) as closed " \
-                                                       "where created_date>= '"+str(since)+"' "
-                                                        "group by agency""")
+                                                       "where created_date>= '"+str(since)+"'" \
+                                                        "group by "+group_key_str )
 
     dataFrame= pd.DataFrame.from_dict(data)
     dataFrame['perc_closed'] = (dataFrame['closed'].astype('float') / dataFrame['total'].astype('float'))
