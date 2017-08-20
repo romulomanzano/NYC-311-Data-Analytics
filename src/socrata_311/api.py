@@ -95,3 +95,11 @@ def pull_agg_time_to_closure_statistics_created_since_closed_only(since,client=N
     dataFrame= pd.DataFrame.from_dict(data)
     dataFrame['days_to_closure'] = dataFrame['days_to_closure'].astype('float')
     return dataFrame
+
+
+def pull_full_closure_statistics_since_date(since,client=None,timeout = 120,group_key = ['agency']):
+    aggWithTimeToClosure = pull_agg_time_to_closure_statistics_created_since_closed_only(since,timeout=timeout,group_key = group_key)
+    aggWithPercClosed = pull_agg_closure_statistics_created_since(since,timeout=timeout,group_key=group_key)
+    consolidated = aggWithPercClosed.merge(aggWithTimeToClosure,how='left',on=group_key,suffixes=('_ttc','_perc'))
+    consolidated['created_after_timestamp'] = since
+    return consolidated

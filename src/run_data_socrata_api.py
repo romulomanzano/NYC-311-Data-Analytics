@@ -46,5 +46,8 @@ aggCout = api.pull_agg_closure_statistics_created_since(since,group_key = ['agen
 
 
 aggTimeMetrics = api.pull_agg_time_to_closure_statistics_created_since_closed_only(since,group_key = ['agency','complaint_type'])
+
+fullMetrics = api.pull_full_closure_statistics_since_date(since,group_key = ['agency','complaint_type'])
+fullMetrics.to_csv('aggregated_time_to_closure_metrics.csv')
 print('Complete')
 # TODO need to make sure nulls are handled (sample comment)
