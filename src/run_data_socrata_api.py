@@ -47,11 +47,21 @@ since = st.isoformat()
 
 #aggTimeMetrics = api.pull_agg_time_to_closure_statistics_created_since_closed_only(since,group_key = ['agency','complaint_type'])
 
-#fullMetrics = api.pull_full_closure_statistics_since_date(since,group_key = ['agency','complaint_type'])
+#aggregatedClosureMetrics = api.pull_full_closure_statistics_since_date(since,group_key = ['agency','complaint_type'])
 #fullMetrics.to_csv('aggregated_time_to_closure_metrics.csv')
 
 metricsSince12Weeks = api.pull_full_closure_statistics_since_x_weeks(12,group_key = ['agency','complaint_type'])
-closedWithinDaysHistogram = api.pull_daily_closure_statistics_since_x_weeks(4,group_key = ['agency'])
+daysToClosureStatsAgency = api.pull_daily_closure_statistics_since_x_weeks(4,group_key = ['agency'])
+daysToClosureStatsComplaintNYPD= api.pull_daily_closure_statistics_since_x_weeks(4,group_key = ['agency','complaint_type']
+                                                                                     ,restrict_clause = " agency = 'NYPD' ")
 closedWithinADayStats = api.pull_closed_within_a_day_stats_since_x_weeks(12,group_key = ['agency','complaint_type'])
+
+#Writing to CSVs to can work on a mockup dashboard:
+metricsSince12Weeks.to_csv('aggregated_time_to_closure_metrics.csv')
+daysToClosureStatsAgency.to_csv('days_to_closure_stats_by_agency_hist.csv')
+daysToClosureStatsComplaintNYPD.to_csv('days_to_closure_stats_by_complaint_nypd_hist.csv')
+closedWithinADayStats.to_csv('aggregated_closed_within_a_day_stats.csv')
+
+
 print('Complete')
 # TODO need to make sure nulls are handled (sample comment)
