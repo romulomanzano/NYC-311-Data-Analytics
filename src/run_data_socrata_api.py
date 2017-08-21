@@ -17,14 +17,14 @@ client = Socrata(settings.APP_NYC_API_DOMAIN, settings.APP_TOKEN_311, timeout=90
 meta = client.get_metadata(settings.APP_NYC_DATASET)
 
 # some experiments about downloading data based on key
-data_key = client.get(settings.APP_NYC_DATASET, limit=100, where="unique_key == '36805062'")
+#data_key = client.get(settings.APP_NYC_DATASET, limit=100, where="unique_key == '36805062'")
 # some experiments about downloading data based on date
-dataDate = client.get(settings.APP_NYC_DATASET, limit=1000, where="created_date >= '2017-07-28'")
+#dataDate = client.get(settings.APP_NYC_DATASET, limit=1000, where="created_date >= '2017-07-28'")
 # some experiments about downloading data based on timestamp
-dataTimestamp = client.get(settings.APP_NYC_DATASET, limit=10000, where="created_date >= '2017-07-27T00:01:02.000'")
+#dataTimestamp = client.get(settings.APP_NYC_DATASET, limit=10000, where="created_date >= '2017-07-27T00:01:02.000'")
 
 # if wanted to convert to dataframe
-fr = etl.flatten_response_list(dataTimestamp, restrict_columns=True)
+#fr = etl.flatten_response_list(dataTimestamp, restrict_columns=True)
 
 # experiment to get data since a given timestamp as string
 # constructing the string
@@ -34,20 +34,24 @@ since = st.isoformat()
 # calling the function
 # receives a date object or timestamp in isoformat
 # beware of the restrictive optional parameters
-dataSince = api.pull_data_created_since(since)
+#dataSince = api.pull_data_created_since(since)
 
-etl.apply_dictionary_enrichments( dataSince )
-frameDelta = etl.flatten_response_list(dataSince, restrict_columns=True)
+#etl.apply_dictionary_enrichments( dataSince )
+#frameDelta = etl.flatten_response_list(dataSince, restrict_columns=True)
 #frameDelta = frameDelta.head(10)
 
 #aggregated = frameDelta.groupby(['agency'],as_index=False).agg({'is_closed':'sum','unique_key':'count'})
 #aggregated['perc_closed'] = (aggregated['is_closed'] / aggregated['unique_key'])
-aggCout = api.pull_agg_closure_statistics_created_since(since,group_key = ['agency','complaint_type'])
+#aggCout = api.pull_agg_closure_statistics_created_since(since,group_key = ['agency','complaint_type'])
 
 
-aggTimeMetrics = api.pull_agg_time_to_closure_statistics_created_since_closed_only(since,group_key = ['agency','complaint_type'])
+#aggTimeMetrics = api.pull_agg_time_to_closure_statistics_created_since_closed_only(since,group_key = ['agency','complaint_type'])
 
-fullMetrics = api.pull_full_closure_statistics_since_date(since,group_key = ['agency','complaint_type'])
-fullMetrics.to_csv('aggregated_time_to_closure_metrics.csv')
+#fullMetrics = api.pull_full_closure_statistics_since_date(since,group_key = ['agency','complaint_type'])
+#fullMetrics.to_csv('aggregated_time_to_closure_metrics.csv')
+
+metricsSince12Weeks = api.pull_full_closure_statistics_since_x_weeks(12,group_key = ['agency','complaint_type'])
+closedWithinDaysHistogram = api.pull_daily_closure_statistics_since_x_weeks(4,group_key = ['agency'])
+closedWithinADayStats = api.pull_closed_within_a_day_stats_since_x_weeks(12,group_key = ['agency','complaint_type'])
 print('Complete')
 # TODO need to make sure nulls are handled (sample comment)
