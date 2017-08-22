@@ -84,3 +84,10 @@ This method returns groupings of the passed key (granularity) and number of days
 This method returns the ratio of complaints closed within a day
 
 
+## How to run a test data pull
+
+See 'run_data_socrata_api.py' script for three sample calls to relevant package methods. The examples pull data and calculate relevant metrics for a window of 12 weeks since call time.
+
+## Intended use in future work
+
+This package lays the foundation for future work on generating actionable insights on the 311. The recommended next steps are to leverage these methods to refresh (1) the life-to-date hdfs files used for broader tableau reporting as wel as (2) persisting the aggregated results in a PostgreSql instance so as to maintain a live connection with the reporting layer (Tableau) and be able to take daily snapshots and perform time series analysis on time to closure.
