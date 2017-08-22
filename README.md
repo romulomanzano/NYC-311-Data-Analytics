@@ -14,6 +14,8 @@ This section covers how to pull a very large .csv file out of the NYC OpenData w
 
 1. Launch and start an AWS EC2 instance with Hadoop, Hive, HDFS, and PostgreSQL. The AMI **ami-be0d5fd4** has everything necessary for the project. Instructions can be found [here](https://github.com/UC-Berkeley-I-School/w205-summer-17-labs-exercises/blob/master/lab_1/Lab1-w205.md) and [here](https://github.com/UC-Berkeley-I-School/w205-summer-17-labs-exercises/blob/master/lab_2/Lab2.md).
 
+Ensure you have an EBS volume attached to the instance; you'll need to it store the data in your /data directory.
+
 2. Create the following open TCP ports on `0.0.0.0/0`  (all ip addresses, in practice you will want to limit this to as neccessary)
 
 - 22 (SSH)
@@ -22,21 +24,33 @@ This section covers how to pull a very large .csv file out of the NYC OpenData w
 - 10000 (Hive)
 - 50070 (Hadoop)
 
-3. Navigate to the /data directory.
+3. Navigate to the /data directory. If you're using an EBS volume, mount it to the /data directory to save the files you place there. (You'll need to use a command like this: `sudo mount -t ext4 /your/device_location /data`. You can view your attached volumes by entering the Unix commands `$ df -k` and `$ fdisk -l`.)
 
-4. Download the data. This data is a slightly modified version of the full dataset that does not include all of the fields (and is therefore more manageable): `$ wget https://data.cityofnewyork.us/api/views/dbhh-68ph/rows.csv?accessType=DOWNLOAD`
+4. Download the data. This data is a slightly modified version of the full dataset that does not include all of the fields (and is therefore more manageable):
 
-5. Strip the headers from your data (necessary for Hive): `$ tail -n +2 311_data.csv > 311_data_no_headers.csv`
+`$ wget https://data.cityofnewyork.us/api/views/dbhh-68ph/rows.csv?accessType=DOWNLOAD`
 
-6. Change the user to w205 (if you're using the UCB AMI): `$  su - w205`
+5. Strip the headers from your data (necessary for Hive):
 
-7. Make a directory in HDFS for your data: `$ hdfs dfs -mkdir /user/w205/final_data`
+`$ tail -n +2 311_data.csv > 311_data_no_headers.csv`
 
-8. Put your new .csv file into HDFS: `$ hdfs dfs -put 311_data_no_headers.csv /user/w205/final_data`
+6. Change the user to w205 (if you're using the UCB AMI):
+
+`$  su - w205`
+
+7. Make a directory in HDFS for your data:
+
+`$ hdfs dfs -mkdir /user/w205/final_data`
+
+8. Put your new .csv file into HDFS:
+
+`$ hdfs dfs -put 311_data_no_headers.csv /user/w205/final_data`
 
 ## Imposing schema
 
-1. Enter Hive: `$ hive`
+1. Enter Hive:
+
+`$ hive`
 
 2. Load the data into HDFS with the found in this repository's /hive directory under *hdfs_schema.sql*.
 
@@ -48,11 +62,17 @@ Within Hive, run transformations that output aggregations of the total table. Th
 - least_common_complaints.sql
 - top_topp_complaint_types.sql
 
-While still in the Hive interpreter, enter `$ show tables` to confirm that the tables exist. You can also query the first few line of each table to inspect the data with a query like `$ SELECT * FROM avg_complaint_coords LIMIT 10`.
+While still in the Hive interpreter, enter `$ show tables` to confirm that the tables exist. You can also query the first few line of each table to inspect the data with a query like this:
+
+`$ SELECT * FROM avg_complaint_coords LIMIT 10`.
 
 ## Visualize the Data in Tableau
 
-1. Within your EC2 instance, run the following command: `hive --service hiveserver2 --hiveconf hive.server2.thrift.port=10000 &`. This ensures that Tableau will be able to read from your Hive tables.
+1. Within your EC2 instance, run the following command:
+
+`hive --service hiveserver2 --hiveconf hive.server2.thrift.port=10000 &`.
+
+This ensures that Tableau will be able to read from your Hive tables.
 
 2. Download Tableau Desktop [here](https://www.tableau.com/products/desktop). You can use a free trial if needed. Tableau also has free options for students.
 
