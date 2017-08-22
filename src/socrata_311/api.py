@@ -41,15 +41,18 @@ def pull_data_created_since(since,client=None,timeout = 120,data_limit = 10000):
 #   The main purpose of this method is to return the percentage closure stats
 #   for a given group key
 # =============================================================================
-def pull_agg_closure_statistics_created_since(since,client=None,timeout = 120,group_key = ['agency']):
+def pull_agg_closure_statistics_created_since(since,client=None,timeout = 120,group_key = ['agency'], restrict_clause=""):
     if (client == None):
         client = Socrata(settings.APP_NYC_API_DOMAIN ,settings.APP_TOKEN_311,timeout=timeout)
     group_key_str = ','.join(group_key)
+    where_clause = ""
+    if (restrict_clause != ""):
+        where_clause = " and " + restrict_clause
     data = client.get(settings.APP_NYC_DATASET,query = "select "+group_key_str +", " \
                                                        "count(*) as total, " \
                                                        "sum(case(status='Closed',1,true,0)) as closed " \
                                                        "where created_date>= '"+str(since)+"'" \
-                                                        "group by "+group_key_str )
+                                                        +where_clause+" group by "+group_key_str )
 
     dataFrame= pd.DataFrame.from_dict(data)
     dataFrame['perc_closed'] = (dataFrame['closed'].astype('float') / dataFrame['total'].astype('float'))
@@ -170,12 +173,16 @@ def pull_daily_closure_statistics_since_x_weeks(weeks, client=None, timeout=120,
 #   This method returns the ratio of complaints closed within a day! (for those actually closed)
 #
 # =============================================================================
-def pull_closed_within_a_day_stats_since_x_weeks(weeks, client=None, timeout=120,group_key=['agency'], data_limit=10000):
+def pull_closed_within_a_day_stats_since_x_weeks(weeks, client=None, timeout=120,group_key=['agency'], data_limit=10000
+                                                 , restrict_clause=""):
     st = datetime.datetime.now() - datetime.timedelta(weeks=weeks)
     since = st.isoformat()
     if (client == None):
         client = Socrata(settings.APP_NYC_API_DOMAIN, settings.APP_TOKEN_311, timeout=timeout)
     group_key_str = ','.join(group_key)
+    where_clause = ""
+    if (restrict_clause != ""):
+        where_clause = " and " + restrict_clause
 
     data = client.get(settings.APP_NYC_DATASET,query = "select "+ group_key_str+","  \
                           "avg(case((((date_extract_woy(closed_date)*7) -(7 - case(date_extract_dow(closed_date)=0,7,true,date_extract_dow(closed_date)))) " \
@@ -183,13 +190,13 @@ def pull_closed_within_a_day_stats_since_x_weeks(weeks, client=None, timeout=120
                           " + ((date_extract_y(closed_date)  - date_extract_y(created_date))* 365) "\
                           ")<=1,1,true,0 )) as closed_within_a_day, count(unique_key) as number_of_records "\
                           "where created_date >= '" + str(since) + "' and closed_date IS NOT NULL and status = 'Closed' " \
-                          "group by "+group_key_str)
+                          +where_clause+" group by "+group_key_str)
     dataFrame = pd.DataFrame.from_dict(data)
     dataFrame['closed_within_a_day'] = dataFrame['closed_within_a_day'].astype('float')
     dataFrame['past_number_of_weeks'] = weeks
     dataFrame['created_after_timestamp'] = since
     #adding non-closed items as well
-    aggWithPercClosed = pull_agg_closure_statistics_created_since(since, timeout=timeout, group_key=group_key)
+    aggWithPercClosed = pull_agg_closure_statistics_created_since(since, timeout=timeout, group_key=group_key,restrict_clause=restrict_clause)
     consolidated = aggWithPercClosed.merge(dataFrame, how='left', on=group_key, suffixes=('_perc', '_closed'))
     consolidated['overall_closed_within_a_day'] = (consolidated['closed_within_a_day']*consolidated['perc_closed'])
     return consolidated
