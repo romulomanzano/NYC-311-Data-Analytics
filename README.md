@@ -52,7 +52,7 @@ Ensure you have an EBS volume attached to the instance; you'll need to it store 
 
 `$ hive`
 
-2. Load the data into HDFS with the found in this repository's /hive directory under *hdfs_schema.sql*.
+2. Load the data into HDFS with the found in this repository's **/hive** directory under *hdfs_schema.sql*.
 
 ## Transform the data
 
@@ -60,7 +60,7 @@ Within Hive, run transformations that output aggregations of the total table. Th
 - avg_complaint_coords.sql
 - complaints_by_type_by_city.sql
 - least_common_complaints.sql
-- top_topp_complaint_types.sql
+- top_complaint_types.sql
 
 While still in the Hive interpreter, enter `$ show tables` to confirm that the tables exist. You can also query the first few line of each table to inspect the data with a query like this:
 
