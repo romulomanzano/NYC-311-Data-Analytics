@@ -19,5 +19,6 @@ metricsSince12Weeks.to_csv('aggregated_time_to_closure_metrics.csv')
 daysToClosureStatsComplaintDOB.to_csv('days_to_closure_stats_by_complaint_dob_hist_one_borough.csv')
 closedWithinADayStats.to_csv('aggregated_closed_within_a_day_stats.csv')
 
+testDictionary= {'maybeHere':'note', 'w':'wakaawk'}
 
 print('Complete')
